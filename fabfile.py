@@ -6,7 +6,7 @@ from getpass import getpass, getuser
 from contextlib import contextmanager
 from posixpath import join
 
-from fabric.api import abort, env, cd, hide, local, prefix, require, run, task
+from fabric.api import abort, env, cd, hide, local, prefix, run, task
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import green
@@ -43,7 +43,7 @@ env.proj_path = "/home/%s/webapps/%s" % (env.user, env.proj_name)
 env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s/.virtualenvs" % env.user)
 env.venv_name = conf.get("VIRTUALENV_NAME", env.proj_name)
 env.venv_path = "%s/%s" % (env.venv_home, env.venv_name)
-env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
+env.reqs_path = conf.get("REQUIREMENTS_PATH", "requirements/project.txt")
 env.manage = "%s/bin/python %s/manage.py" % (env.venv_path, env.proj_path)
 env.repo_path = conf.get("REPO_PATH", "/home/%s/webapps/git/repos/%s.git" % (
     env.user, env.proj_name))
@@ -453,7 +453,6 @@ def create():
     Crete database, db user, and website.
     Set up the project.
     """
-    require("reqs_path")
     setup_venv()
     setup_webfaction()
     setup_git()
