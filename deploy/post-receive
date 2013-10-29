@@ -1,0 +1,3 @@
+#!/bin/sh
+GIT_WORK_TREE=%(proj_path)s git checkout -f
+GIT_WORK_TREE=%(proj_path)s git reset --hard
