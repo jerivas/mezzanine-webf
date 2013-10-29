@@ -67,8 +67,13 @@ env.nevercache_key = conf.get("NEVERCACHE_KEY", "")
 # also run.
 
 templates = {
-    "supervisor": {
-        "local_path": "deploy/supervisor.conf",
+    "supervisord": {
+        "local_path": "deploy/supervisord.conf",
+        "remote_path": "/home/%(user)s/etc/supervisord.conf",
+        "reload_command": "supervisord",
+    },
+    "supervisorctl": {
+        "local_path": "deploy/supervisorctl.conf",
         "remote_path": "%(supervisor_conf)s",
         "reload_command": "supervisorctl restart gunicorn_%(proj_name)s",
     },
@@ -279,6 +284,30 @@ def static():
 def manage(command):
     """Run a Django management command."""
     return run("%s %s" % (env.manage, command))
+
+
+######################
+# Prepare Webfaction #
+######################
+
+@task
+@log_call
+def prepare_webfaction():
+    """
+    Install all prerequistes in a Webfaction server. This task should only be
+    run once per server. All new projects deployed with this fabfile don't
+    need to run it again.
+    """
+    print("Installing all prerequistes to Webfaction server.")
+    srv, ssn, acn = get_webf_session()
+    srv.create_app(ssn, "git", env.password)
+    run("easy_install-2.7 pip")
+    run("pip-2.7 install virtualenv supervisor")
+    upload_template_and_reload("supervisord")
+    # Memcached will use up to 50 Mb of memory.
+    run("memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid")
+    print("Successfully set up git, pip, virtualenv, supervisor, and "
+          "memcached.")
 
 
 #########################
@@ -511,7 +540,7 @@ def deploy(first=False, backup=False):
     srv, ssn, acn = get_webf_session()
     app = get_webf_obj(srv, ssn, "app", env.proj_name)
     env.gunicorn_port = app["port"]
-    upload_template_and_reload("supervisor")
+    upload_template_and_reload("supervisorctl")
     upload_template_and_reload("gunicorn")
     upload_template_and_reload("settings")
     local("git push webfaction master")
