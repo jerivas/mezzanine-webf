@@ -374,7 +374,7 @@ def setup_webfaction():
         print("Removed static app: %s." % static_app["name"])
     print("Creating new static app.")
     static_app_name = "%s_static" % env.proj_name
-    static_dir = "%s/static" % env.proj_path
+    static_dir = static()
     srv.create_app(ssn, static_app_name, "symlink54", False, static_dir)
     print("New static app: %s. Serving /static from %s." % (
         static_app_name, static_dir))
@@ -540,6 +540,8 @@ def deploy(first=False, backup=False):
     env.gunicorn_port = app["port"]
     for name in get_templates():
         upload_template_and_reload(name)
+    static_dir = static() + "/.htaccess"
+    upload_template("deploy/htaccess", static_dir, backup=False)
     local("git push webfaction master")
     if backup:
         with project():
