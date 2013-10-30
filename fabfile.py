@@ -483,6 +483,10 @@ def remove():
     if website:
         del_webf_obj(srv, ssn, "website", env.proj_name, env.host_string)
         print("Removed website: %s." % website["name"])
+    dom = get_webf_obj(srv, ssn, "domain", env.live_domain, env.live_subdomain)
+    if dom:
+        del_webf_obj(srv, ssn, "domain", env.live_domain, env.live_subdomain)
+        print("Removed domain: %s." % env.live_host)
     main_app = get_webf_obj(srv, ssn, "app", env.proj_name)
     if main_app:
         del_webf_obj(srv, ssn, "app", main_app["name"])
