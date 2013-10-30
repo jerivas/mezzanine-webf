@@ -67,11 +67,6 @@ env.nevercache_key = conf.get("NEVERCACHE_KEY", "")
 # also run.
 
 templates = {
-    "supervisord": {
-        "local_path": "deploy/supervisord.conf",
-        "remote_path": "/home/%(user)s/etc/supervisord.conf",
-        "reload_command": "supervisord",
-    },
     "supervisorctl": {
         "local_path": "deploy/supervisorctl.conf",
         "remote_path": "%(supervisor_conf)s",
@@ -85,7 +80,7 @@ templates = {
         "local_path": "deploy/live_settings.py",
         "remote_path": "%(proj_path)s/local_settings.py",
     },
-    "post_receive_hook": {
+    "post receive hook": {
         "local_path": "deploy/post-receive",
         "remote_path": "%(repo_path)s/hooks/post-receive"
     },
@@ -303,7 +298,11 @@ def prepare_webfaction():
     srv.create_app(ssn, "git", env.password)
     run("easy_install-2.7 pip")
     run("pip-2.7 install virtualenv supervisor")
-    upload_template_and_reload("supervisord")
+    remote_path = "/home/%s/etc" % env.user
+    run("mkdir -p %s" % remote_path)
+    remote_path += "/supervisord.conf"
+    upload_template("supervisord.conf", remote_path, env, backup=False)
+    run("supervisord")
     # Memcached will use up to 50 Mb of memory.
     run("memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid")
     print("Successfully set up git, pip, virtualenv, supervisor, and "
@@ -403,7 +402,7 @@ def setup_git():
         run("mkdir %s" % env.repo_path)
         with cd(env.repo_path):
             run("git init --bare")
-    upload_template_and_reload("post_receive_hook")
+    upload_template_and_reload("post receive hook")
     run("chmod +x %s/hooks/post-receive" % env.repo_path)
     print("Git repo ready at %s" % env.repo_path)
     local("git remote add webfaction ssh://%s%s" % (
@@ -539,9 +538,8 @@ def deploy(first=False, backup=False):
     srv, ssn, acn = get_webf_session()
     app = get_webf_obj(srv, ssn, "app", env.proj_name)
     env.gunicorn_port = app["port"]
-    upload_template_and_reload("supervisorctl")
-    upload_template_and_reload("gunicorn")
-    upload_template_and_reload("settings")
+    for name in get_templates():
+        upload_template_and_reload(name)
     local("git push webfaction master")
     if backup:
         with project():
