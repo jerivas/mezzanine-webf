@@ -107,16 +107,28 @@ def get_webf_session():
     return server, session, account
 
 
-def get_webf_obj(server, session, obj_type, obj_name):
+def get_webf_obj(server, session, obj_type, obj_name, subdomain=None):
     """
     Check the existence of an object in the server. Return the object
     if found, False if not. A simple wrapper for the "list_XXX" API methods.
     """
+    # Get a list of objects from the API
     obj_list = getattr(server, "list_%ss" % obj_type)(session)
-    for obj in obj_list:
-        if obj.get("name") == obj_name or obj.get("username") == obj_name:
-            return obj
-    return False
+    # Choose a key according to the object type
+    key_map = {"domain": "domain", "db_user": "username"}
+    key = key_map.get(obj_type, "name")
+    # Filter the list by key and get a single object
+    try:
+        obj = [item for item in obj_list if item[key] == obj_name][0]
+    # If the list is empty, there's no match, return False
+    except IndexError:
+        return False
+    else:
+        # If we're querying for a subdomain, let's check it's there
+        if key == "domain" and subdomain is not None:
+            return obj if subdomain in obj["subdomains"] else False
+        # Else just return the object we already found
+        return obj
 
 
 def del_webf_obj(server, session, obj_type, obj_name, *args):
