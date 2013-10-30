@@ -317,6 +317,7 @@ def prepare_webfaction():
 @log_call
 def setup_venv():
     """Set up a new virtualenv or reuse an existing one."""
+    run("mkdir -p %s" % env.venv_home)
     with cd(env.venv_home):
         if exists(env.venv_name):
             if confirm("Virtualenv already exists: %s. Reinstall?"
