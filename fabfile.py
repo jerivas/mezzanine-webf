@@ -359,45 +359,47 @@ def setup_webfaction():
     using the Webfaction API.
     """
     srv, ssn, acn = get_webf_session()
+    # Database user
     db_user = get_webf_obj(srv, ssn, "db_user", env.proj_name)
     if db_user:
-        del_webf_obj(srv, ssn, "db_user", env.proj_name, "postgresql")
-        print("Removed database user: %s." % db_user["username"])
+        abort("Database user %s already exists." % db_user["username"])
     db = get_webf_obj(srv, ssn, "db", env.proj_name)
     if db:
-        del_webf_obj(srv, ssn, "db", db["name"], "postgresql")
-        print("Removed databse: %s" % db["name"])
+        abort("Databse %s already exists." % db["name"])
     print("Creating new Postgres database.")
     if env.db_pass is None:
         env.db_pass = db_pass()
     srv.create_db(ssn, env.proj_name, "postgresql", env.db_pass)
     print("New database and database user: %s." % env.proj_name)
+    # Custom app
     app = get_webf_obj(srv, ssn, "app", env.proj_name)
     if app:
-        del_webf_obj(srv, ssn, "app", app["name"])
-        print("Removed app: %s." % app["name"])
+        abort("App %s already exists." % app["name"])
     print("Creating new custom app.")
-    app = srv.create_app(ssn, env.proj_name, "custom_app_with_port",
-                         True, "")
-    print("New custom app: %s. Listening at port: %s." % (
+    app = srv.create_app(ssn, env.proj_name, "custom_app_with_port", True, "")
+    print("New custom app: %s. Listening to port: %s." % (
         app["name"], app["port"]))
+    # Static app
     static_app = get_webf_obj(srv, ssn, "app", "%s_static" % env.proj_name)
     if static_app:
-        del_webf_obj(srv, ssn, "app", static_app["name"])
-        print("Removed static app: %s." % static_app["name"])
+        abort("Static app %s already exists." % static_app["name"])
     print("Creating new static app.")
     static_app_name = "%s_static" % env.proj_name
-    static_dir = static()
+    static_dir = "%s/static" % env.proj_path
     srv.create_app(ssn, static_app_name, "symlink54", False, static_dir)
     print("New static app: %s. Serving /static from %s." % (
         static_app_name, static_dir))
+    # Domain and subdomain
+    dom = get_webf_obj(srv, ssn, "domain", env.live_domain, env.live_subdomain)
+    if dom:
+        abort("Domain %s already exists." % env.live_host)
     print("Configuring domains.")
     srv.create_domain(ssn, env.live_domain, env.live_subdomain)
     print("New domain: %s." % env.live_host)
+    # Site record
     site = get_webf_obj(srv, ssn, "website", env.proj_name)
     if site:
-        del_webf_obj(srv, ssn, "website", site["name"], site["ip"], False)
-        print("Removed website: %s." % site["name"])
+        abort("Website: %s already exists." % site["name"])
     print("Creating new site record")
     main_app, static_app = [env.proj_name, "/"], [static_app_name, "/static"]
     site = srv.create_website(ssn, env.proj_name, env.host_string, False,
@@ -495,21 +497,21 @@ def remove():
     if static_app:
         del_webf_obj(srv, ssn, "app", "%s_static" % env.proj_name)
         print("Removed app: %s." % static_app["name"])
-    db_user = get_webf_obj(srv, ssn, "db_user", env.proj_name)
-    if db_user:
-        del_webf_obj(srv, ssn, "db_user", env.proj_name, "postgresql")
-        print("Removed database user: %s." % env.proj_name)
     db = get_webf_obj(srv, ssn, "db", env.proj_name)
     if db:
         del_webf_obj(srv, ssn, "db", env.proj_name, "postgresql")
         print("Removed database: %s." % db["name"])
+    db_user = get_webf_obj(srv, ssn, "db_user", env.proj_name)
+    if db_user:
+        del_webf_obj(srv, ssn, "db_user", env.proj_name, "postgresql")
+        print("Removed database user: %s." % env.proj_name)
     if isinstance(env.twitter_period, int):
         srv.delete_cronjob(ssn, "*/%s * * * * %s poll_twitter" % (
             env.twitter_period, env.manage))
         print("Removed Twitter cron job for %s." % env.proj_name)
     if exists(env.venv_path):
         run("rm -rf %s" % env.venv_path, quiet=True)
-        print("Removed remote virtualenv: %s." % env.proj_name)
+        print("Removed remote virtualenv: %s." % env.venv_name)
     if exists(env.repo_path):
         run("rm -rf %s" % env.repo_path, quiet=True)
         local("git remote rm webfaction", capture=True)
@@ -557,8 +559,6 @@ def deploy(first=False, backup=False):
     env.gunicorn_port = app["port"]
     for name in get_templates():
         upload_template_and_reload(name)
-    static_dir = static() + "/.htaccess"
-    upload_template("deploy/htaccess", static_dir, backup=False)
     local("git push webfaction master")
     if backup:
         with project():
@@ -567,6 +567,8 @@ def deploy(first=False, backup=False):
             if exists(static_dir):
                 run("tar -cf last.tar %s" % static_dir)
     manage("collectstatic -v 0 --noinput")
+    static_dir = static() + "/.htaccess"
+    upload_template("deploy/htaccess", static_dir, backup=False)
     manage("syncdb --noinput")
     manage("migrate --noinput")
     if first:
