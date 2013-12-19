@@ -476,7 +476,7 @@ def create():
 
 @task
 @log_call
-def remove():
+def remove(venv=False):
     """
     Blow away the current project.
     """
@@ -509,7 +509,7 @@ def remove():
         srv.delete_cronjob(ssn, "*/%s * * * * %s poll_twitter" % (
             env.twitter_period, env.manage))
         print("Removed Twitter cron job for %s." % env.proj_name)
-    if exists(env.venv_path):
+    if venv and exists(env.venv_path):
         run("rm -rf %s" % env.venv_path, quiet=True)
         print("Removed remote virtualenv: %s." % env.venv_name)
     if exists(env.repo_path):
