@@ -27,7 +27,7 @@ Download `fabfile.py`, `wsgi.py` and `deploy/` to your Mezzanine project folder,
 #### YOU MUST INSTALL THE PRE-REQUISITES IN YOUR SERVER FIRST!
 Run `fab prepare_webfaction` to prepare your account for hosting your projects. You only need to run this task once for each account. All subsequent projects can skip this step. After that:
 
-1. Configure your live settings in the `DEPLOY SETTINGS` section of `local_settings.py`. This is the only file you have to edit, all others will be populated by Fabric. All available settings are explained below. **This settings are different from those provided in `settings.py` by Mezzanine.**
+1. Copy the contents of `fabsettings.py` into the `DEPLOY SETTINGS` section of `local_settings.py`. This is the only file you have to edit, all others will be populated by Fabric. All available settings are explained below. **This settings are different from those provided in `settings.py` by Mezzanine.**
 1. In your dev machine and in your project directory run `fab all` to setup everything for your project in the server. `fab all` simply calls `fab create` and the `fab deploy:first=True`. It basically sets up your project environment first and then deploys it for the first time.
 1. Subsequent deployments can be done with `fab deploy`. If you use `fab deploy:backup=True`, Fabric will backup your project database and static files before deploying the current version of the project.
 1. You can setup up a cronjob for polling Twitter with `fab setup_twitter`.
