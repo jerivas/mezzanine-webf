@@ -30,9 +30,10 @@ FABRIC = {
     "LIVE_DOMAIN": "",
     # Subdomian where the site will be deployed
     "LIVE_SUBDOMAIN": "",
-    # Git remote repo URL for the project
+    # Git remote repo path for the project
+    # Comment this out if you used prepare_webfaction
     # Default: $HOME/webapps/git/repos/PROJECT_NAME
-    "REPO_URL": "",
+    "REPO_PATH": "",
     # Live database user
     "DB_USER": "",
     # Live database password
