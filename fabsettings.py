@@ -42,4 +42,7 @@ FABRIC = {
     # Minutes between every time Twitter is polled
     # Optional, but requires mezzanine.twitter
     "TWITTER_PERIOD": "",
+    # Make sure these keys are available here
+    "SECRET_KEY": None,
+    "NEVERCACHE_KEY": None,
 }
