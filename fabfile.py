@@ -311,7 +311,7 @@ def prepare_webfaction():
     run("easy_install-2.7 pip")
     run("pip-2.7 install virtualenv supervisor")
     remote_path = "/home/%s/etc" % env.user
-    run("mkdir -p %s" % remote_path)
+    run("mkdir -p %s/supervisor/conf.d" % remote_path)
     remote_path += "/supervisord.conf"
     upload_template("deploy/supervisord.conf", remote_path, env, backup=False)
     run("supervisord")
