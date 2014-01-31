@@ -307,7 +307,7 @@ def prepare_webfaction():
     """
     print("Installing all prerequistes to Webfaction server.")
     srv, ssn, acn = get_webf_session()
-    srv.create_app(ssn, "git", env.password)
+    srv.create_app(ssn, "git", "git", False, env.password)
     run("easy_install-2.7 pip")
     run("pip-2.7 install virtualenv supervisor")
     remote_path = "/home/%s/etc" % env.user
