@@ -44,6 +44,6 @@ FABRIC = {
     # Optional, but requires mezzanine.twitter
     "TWITTER_PERIOD": "",
     # Make sure these keys are available here
-    "SECRET_KEY": None,
-    "NEVERCACHE_KEY": None,
+    "SECRET_KEY": SECRET_KEY,
+    "NEVERCACHE_KEY": NEVERCACHE_KEY,
 }
