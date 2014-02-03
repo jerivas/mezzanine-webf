@@ -420,7 +420,7 @@ def setup_git():
     upload_template_and_reload("post receive hook")
     run("chmod +x %s/hooks/post-receive" % env.repo_path)
     print("Git repo ready at %s" % env.repo_path)
-    local("git remote add webfaction ssh://%s%s" % (
+    local("git remote add webfaction ssh://%s@%s%s" % (env.user,
         env.host_string, env.repo_path))
     print("Added new remote 'webfaction'. You can now push to it with "
           "git push webfaction.")
