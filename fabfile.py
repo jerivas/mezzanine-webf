@@ -314,6 +314,7 @@ def prepare_webfaction():
     run("mkdir -p %s/supervisor/conf.d" % remote_path)
     remote_path += "/supervisord.conf"
     upload_template("deploy/supervisord.conf", remote_path, env, backup=False)
+    run("mkdir -p /home/%s/tmp" % env.user)
     run("supervisord")
     # Memcached will use up to 50 Mb of memory.
     run("memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid")
