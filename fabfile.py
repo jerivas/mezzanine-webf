@@ -309,7 +309,7 @@ def prepare_webfaction():
     srv, ssn, acn = get_webf_session()
     srv.create_app(ssn, "git", "git", False, env.password)
     run("easy_install-2.7 pip")
-    run("pip-2.7 install virtualenv supervisor")
+    run("pip2.7 install --user virtualenv supervisor")
     remote_path = "/home/%s/etc" % env.user
     run("mkdir -p %s/supervisor/conf.d" % remote_path)
     remote_path += "/supervisord.conf"
