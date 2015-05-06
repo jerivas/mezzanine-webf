@@ -6,10 +6,10 @@ from getpass import getpass, getuser
 from contextlib import contextmanager
 from posixpath import join
 
-from fabric.api import abort, env, cd, hide, local, prefix, run, task
+from fabric.api import abort, env, cd, hide, local, prefix, run as _run, task
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template
-from fabric.colors import green
+from fabric.colors import yellow, green, blue, red
 
 ################
 # Config setup #
@@ -193,6 +193,26 @@ def update_changed_requirements():
 # Utils and wrappers for various commands #
 ###########################################
 
+def _print(output):
+    print()
+    print(output)
+    print()
+
+def print_command(command):
+    _print(blue("$ ", bold=True) +
+           yellow(command, bold=True) +
+           red(" ->", bold=True))
+
+@task
+def run(command, show=True, *args, **kwargs):
+    """
+    Runs a shell comand on the remote server.
+    """
+    if show:
+        print_command(command)
+    with hide("running"):
+        return _run(command, *args, **kwargs)
+
 def log_call(func):
     """Log the name of the function it wraps to stdout."""
     @wraps(func)
@@ -271,14 +291,19 @@ def restore(filename):
 
 
 @task
-def python(code):
+def python(code, show=True):
     """
-    Run Python code in the project's virtual environment, with Django loaded.
+    Runs Python code in the project's virtual environment, with Django loaded.
     """
-    setup = "import os; os.environ[\'DJANGO_SETTINGS_MODULE\']=\'settings\';"
+    setup = "import os; os.environ[\'DJANGO_SETTINGS_MODULE\']=\'settings\';" \
+            "import django;" \
+            "django.setup();"
     full_code = 'python -c "%s%s"' % (setup, code.replace("`", "\\\`"))
     with project():
-        return run(full_code)
+        if show:
+            print_command(code)
+        result = run(full_code, show=False)
+    return result
 
 
 def static():
