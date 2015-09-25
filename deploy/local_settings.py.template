@@ -1,5 +1,8 @@
+from __future__ import unicode_literals
+
 SECRET_KEY = "%(secret_key)s"
 NEVERCACHE_KEY = "%(nevercache_key)s"
+ALLOWED_HOSTS = [%(domains_python)s]
 
 DATABASES = {
     "default": {
@@ -32,5 +35,3 @@ CACHES = {
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-
-ALLOWED_HOSTS = ["%(live_host)s"]

@@ -1,0 +1,8 @@
+from __future__ import unicode_literals
+import multiprocessing
+
+bind = "127.0.0.1:%(gunicorn_port)s"
+workers = %(num_workers)s
+errorlog = "/home/%(user)s/logs/user/%(proj_name)s_error.log"
+loglevel = "error"
+proc_name = "%(proj_name)s"
