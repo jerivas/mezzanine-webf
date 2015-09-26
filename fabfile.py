@@ -349,10 +349,15 @@ def db_pass():
 @task
 def pip(packages, show=True):
     """
-    Installs one or more Python packages within the virtual environment.
+    Install Python packages within the virtual environment.
     """
+    # We use our own tmp folder to avoid problems with the system /tmp.
+    pip_tmp = "/home/%s/tmp/pip" % env.user
+    if not exists(pip_tmp):
+        run("mkdir -p %s" % pip_tmp)
     with virtualenv():
-        return run("pip install %s" % packages, show=show)
+        run("pip install -b %s %s" % (pip_tmp, packages), show=show)
+        run("rm -rf %s/*" % pip_tmp, show=show)  # Cleanup
 
 
 @task
