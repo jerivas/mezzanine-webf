@@ -701,24 +701,6 @@ def deploy():
 
 @task
 @log_call
-def setup_twitter():
-    """
-    Setup a cron job to poll Twitter periodically.
-    """
-    if isinstance(env.twitter_period, int):
-        srv, ssn, acn = get_webf_session()
-        srv.create_cronjob(ssn, "*/%s * * * * %s poll_twitter" % (
-            env.twitter_period, env.manage))
-        manage("poll_twitter")
-        print("New cronjob. Twitter will be polled every %s minutes. "
-              "Please make sure you have configured your Twitter credentials "
-              "in your site settings." % env.twitter_period)
-    else:
-        abort("TWITTER_PERIOD not set correctly in deployment settings.")
-
-
-@task
-@log_call
 def rollback():
     """
     Reverts project state to the last deploy.
@@ -815,3 +797,21 @@ def pushmedia():
     Upload the local media files into the remote MEDIA_ROOT.
     """
     cpmedia(upload=True)
+
+
+@task
+@log_call
+def setup_twitter():
+    """
+    Setup a cron job to poll Twitter periodically.
+    """
+    if isinstance(env.twitter_period, int):
+        srv, ssn, acn = get_webf_session()
+        srv.create_cronjob(ssn, "*/%s * * * * %s poll_twitter" % (
+            env.twitter_period, env.manage))
+        manage("poll_twitter")
+        print("New cronjob. Twitter will be polled every %s minutes. "
+              "Please make sure you have configured your Twitter credentials "
+              "in your site settings." % env.twitter_period)
+    else:
+        abort("TWITTER_PERIOD not set correctly in deployment settings.")
