@@ -333,12 +333,12 @@ def db_pass():
 
 
 @task
-def pip(packages):
+def pip(packages, show=True):
     """
     Installs one or more Python packages within the virtual environment.
     """
     with virtualenv():
-        return run("pip install %s" % packages)
+        return run("pip install %s" % packages, show=show)
 
 
 @task
@@ -346,6 +346,7 @@ def backup(filename):
     """
     Backs up the project database.
     """
+    print(blue("Input the remote database password", bold=True))
     return run("pg_dump -U %s -Fc %s > %s" % (
         env.proj_name, env.proj_name, filename))
 
@@ -355,6 +356,7 @@ def restore(filename):
     """
     Restores the project database from a previous backup.
     """
+    print(blue("Input the remote database password", bold=True))
     return run("pg_restore -U %s -c -d %s %s" % (
         env.proj_name, env.proj_name, filename))
 
@@ -457,6 +459,8 @@ def create():
         run("touch %s/lib/python2.7/sitecustomize.py" % env.proj_name)
 
     # Create elements with the Webfaction API
+    _print(blue("Creating database and website records in the Webfaction "
+                "control panel...", bold=True))
     srv, ssn, acn = get_webf_session()
 
     # Database
@@ -499,19 +503,22 @@ def create():
                               [env.live_host], main_app, static_app)
 
     # Upload project files
+    _print(blue("Uploading project files...", bold=True))
     if env.deploy_tool in env.vcs_tools:
         vcs_upload()
     else:
         rsync_upload()
 
     # Install project-specific requirements
+    _print(blue("Installing project requirements...", bold=True))
     upload_template_and_reload("settings")
     with project():
         if env.reqs_path:
-            pip("-r %s/%s" % (env.proj_path, env.reqs_path))
+            pip("-r %s/%s" % (env.proj_path, env.reqs_path), show=False)
         pip("gunicorn setproctitle psycopg2 "
-            "django-compressor python-memcached")
+            "django-compressor python-memcached", show=False)
     # Bootstrap the DB
+        _print(blue("Initializing the database...", bold=True))
         manage("createdb --noinput --nodata")
         python("from django.conf import settings;"
                "from django.contrib.sites.models import Site;"
@@ -540,6 +547,8 @@ def remove():
     Blow away the current project.
     """
     # Delete Webfaction API objects
+    _print(blue("Removing database and website records from the Webfaction "
+                "control panel...", bold=True))
     srv, ssn, acn = get_webf_session()
     website = get_webf_obj(srv, ssn, "website", env.proj_name)
     if website:
@@ -613,6 +622,7 @@ def deploy():
             abort()
 
     # Backup current version of the project
+    _print(blue("Backing up static files and database...", bold=True))
     with cd(env.proj_path):
         backup("last.db")
     if env.deploy_tool in env.vcs_tools:
@@ -633,6 +643,7 @@ def deploy():
             run("tar -cf {0}.tar {1} {0}".format(env.proj_name, exclude_arg))
 
     # Deploy, update requirements, collect static assets, and migrate the DB
+    _print(blue("Deploying the latest version of the project...", bold=True))
     with update_changed_requirements():
         if env.deploy_tool in env.vcs_tools:
             vcs_upload()
@@ -640,12 +651,12 @@ def deploy():
             rsync_upload()
     run("mkdir -p %s" % static())  # Create the STATIC_ROOT
     remote_path = static() + "/.htaccess"
-    local("cat deploy/htaccess")
     upload_template("deploy/htaccess", remote_path, backup=False)
     manage("collectstatic -v 0 --noinput")
     manage("migrate --noinput")
 
     # Upload templated config files
+    _print(blue("Uploading configuration files...", bold=True))
     srv, ssn, acn = get_webf_session()
     app = get_webf_obj(srv, ssn, "app", env.proj_name)
     env.gunicorn_port = app["port"]
