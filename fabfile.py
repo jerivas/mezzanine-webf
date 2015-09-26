@@ -68,6 +68,14 @@ env.num_workers = conf.get("NUM_WORKERS",
 env.secret_key = conf.get("SECRET_KEY", "")
 env.nevercache_key = conf.get("NEVERCACHE_KEY", "")
 
+env.email_user = conf.get("EMAIL_USER", None)
+env.email_pass = conf.get("EMAIL_PASS", None)
+env.default_email = conf.get("DEFAULT_EMAIL", None)
+if not (env.email_user and env.email_pass and env.default_email):
+    env.use_email = "#"
+else:
+    env.use_email = ""
+
 # Remote git repos need to be "bare" and reside separated from the project
 if env.deploy_tool == "git":
     env.repo_path = "/home/%s/webapps/git_app/repos/%s.git" % (env.user, env.proj_name)
@@ -802,6 +810,21 @@ def pushmedia():
     Upload the local media files into the remote MEDIA_ROOT.
     """
     cpmedia(upload=True)
+
+
+@task
+@log_call
+def setup_email():
+    """
+    Setup a mailbox to send out error emails to ADMINS.
+    """
+    if env.use_email == "#":
+        abort("Please define email settings in the FABRIC dictionary first.")
+    _print(blue("Setting up a Webfaction mailbox.", bold=True))
+    srv, ssn, acn = get_webf_session()
+    srv.create_mailbox(ssn, env.email_user)
+    srv.change_mailbox_password(ssn, env.email_user, env.email_pass)
+    srv.create_email(ssn, env.default_email, env.email_user)
 
 
 @task

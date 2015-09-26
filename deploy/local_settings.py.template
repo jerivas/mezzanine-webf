@@ -35,3 +35,11 @@ CACHES = {
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+
+%(use_email)sEMAIL_HOST = 'smtp.webfaction.com'
+%(use_email)sEMAIL_HOST_USER = '%(email_user)s'
+%(use_email)sEMAIL_HOST_PASSWORD = str('%(email_pass)s')
+%(use_email)sDEFAULT_FROM_EMAIL = '%(default_email)s'
+%(use_email)sSERVER_EMAIL = '%(default_email)s'
+%(use_email)sEMAIL_USE_TLS = True
+%(use_email)sEMAIL_PORT = 587
