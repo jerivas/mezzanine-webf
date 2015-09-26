@@ -1,49 +1,27 @@
-# Copy this settings to your local_settings.py.
-# Comment out the settings where you want to use defaults.
+###################
+# DEPLOY SETTINGS #
+###################
+
+# Copy this portion into the corresponding section of your local_settings.py.
+
+# Domains for public site
+ALLOWED_HOSTS = []
 
 FABRIC = {
-    # Webfaction SSH username
-    "SSH_USER": "",
-    # Webfaction SSH password (You'll need this even if you use
-    # key-based auth because of Webafaction's API)
-    "SSH_PASS":  "",
-    # Local path to SSH key file, for key-based auth
-    "SSH_KEY_PATH":  "",
-    # The IP address of your Webfaction server
-    "HOSTS": [""],
-    # Unique identifier for project.
-    # Default: container folder name.
-    "PROJECT_NAME": "",
-    # Absolute remote path for virtualenvs.
-    # Default: $HOME/.virtualenvs
-    "VIRTUALENV_HOME":  "",
-    # Name of the remote virtualenv to use.
-    # Default: PROJECT_NAME
-    "VIRTUALENV_NAME":  "",
-    # Path to pip requirements, relative to project.
-    # Default: requirements/project.txt
-    "REQUIREMENTS_PATH": "",
-    # Locale for your live project. Should end with ".UTF-8"
-    # Default: en_US.UTF-8
-    "LOCALE": "",
-    # Domain where the site will be deployed
-    "LIVE_DOMAIN": "",
-    # Subdomian where the site will be deployed
-    "LIVE_SUBDOMAIN": "",
-    # Git remote repo path for the project
-    # Comment this out if you used prepare_webfaction
-    # Default: $HOME/webapps/git/repos/PROJECT_NAME
-    "REPO_PATH": "",
-    # Live database user
-    "DB_USER": "",
-    # Live database password
-    "DB_PASS": "",
-    # Live admin user password
-    "ADMIN_PASS": "",
-    # Minutes between every time Twitter is polled
-    # Optional, but requires mezzanine.twitter
-    "TWITTER_PERIOD": "",
-    # Make sure these keys are available here
+    "DEPLOY_TOOL": "git",  # Deploy with "git" or "rsync"
+    "SSH_USER": "",  # Wefaction username
+    # "SSH_PASS": "",  # SSH and Webfaction account password
+    # "SSH_KEY_PATH":  "",  # Local path to SSH key file, for key-based auth
+    "HOSTS": ["XX.XX.XX.XX"],  # The IP address of your Webfaction server
+    "DOMAINS": ALLOWED_HOSTS,  # Edit domains in ALLOWED_HOSTS
+    "LIVE_DOMAIN": "example.com",  # Domain to associate the app with
+    "LIVE_SUBDOMAIN": "www",  # Subdomain to associate the app with (optional)
+    "REQUIREMENTS_PATH": "requirements.txt",  # Project's pip requirements
+    "LOCALE": "en_US.UTF-8",  # Should end with ".UTF-8"
+    "NUM_WORKERS": 2,  # Limit the amount of workers for gunicorn
+    # "DB_PASS": "",  # Live database password
+    # "ADMIN_PASS": "",  # Live admin user password
+    # "TWITTER_PERIOD": None,  # Minutes
     "SECRET_KEY": SECRET_KEY,
     "NEVERCACHE_KEY": NEVERCACHE_KEY,
 }
