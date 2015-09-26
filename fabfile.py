@@ -347,7 +347,7 @@ def backup(filename):
     """
     Backs up the remote (production) database.
     """
-    print(blue("Input the remote database password", bold=True))
+    print(blue("Input the remote database password when prompted", bold=True))
     return run("pg_dump -U %s -Fc %s > %s" % (
         env.proj_name, env.proj_name, filename))
 
@@ -357,7 +357,7 @@ def local_backup(filename):
     """
     Backs up the local (development) database.
     """
-    print(blue("Input the local database password", bold=True))
+    print(blue("Input the local database password when prompted", bold=True))
     return local("pg_dump -U %s -Fc %s -h localhost > %s" % (
         env.proj_name, env.proj_name, filename))
 
@@ -367,7 +367,7 @@ def restore(filename):
     """
     Restores the remote (production) database from a previous backup.
     """
-    print(blue("Input the remote database password", bold=True))
+    print(blue("Input the remote database password when prompted", bold=True))
     return run("pg_restore -U %s -c -d %s %s" % (
         env.proj_name, env.proj_name, filename))
 
@@ -377,7 +377,7 @@ def local_restore(filename):
     """
     Restores the local (development) database from a previous backup.
     """
-    print(blue("Input the local database password", bold=True))
+    print(blue("Input the local database password when prompted", bold=True))
     return local("pg_restore -U %s -c -d %s -h localhost %s" % (
         env.proj_name, env.proj_name, filename))
 
