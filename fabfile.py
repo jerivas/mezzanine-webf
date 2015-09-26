@@ -414,23 +414,22 @@ def install():
     run("easy_install-2.7 pip")
     run("pip install -U pip virtualenv virtualenvwrapper supervisor")
 
-    # Start supervisor
-    remote_path = "/home/%s/etc" % env.user
-    run("mkdir -p %s/supervisor/conf.d" % remote_path)
-    remote_path += "/supervisord.conf"
-    upload_template("deploy/supervisord.conf.template", remote_path, env, backup=False)
+    # Set up supervisor
+    conf_path = "/home/%s/etc" % env.user
+    run("mkdir -p %s/supervisor/conf.d" % conf_path)
+    conf_path += "/supervisord.conf"
+    upload_template("deploy/supervisord.conf.template", conf_path, env, backup=False)
     run("mkdir -p /home/%s/tmp" % env.user)
-    run("mkdir -p /home/%s/logs" % env.user)
-    run("supervisord")
+    run("supervisord -c %s" % conf_path)
 
-    # Set up virtualenv
+    # Set up virtualenv and virtualenvwrapper
     run("mkdir -p %s" % env.venv_home)
     bashrc = "/home/%s/.bashrc" % env.user
     run("echo 'export WORKON_HOME=%s' >> %s" % (env.venv_home, bashrc))
     run("echo 'export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python2.7' >> %s" % bashrc)
     run("echo 'source $HOME/bin/virtualenvwrapper.sh' >> %s" % bashrc)
 
-    # Memcache (with 50 MB of RAM)
+    # Set up memcached (with 50 MB of RAM)
     run("memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid")
 
     print(green("Successfully set up git, mercurial, pip, virtualenv, "
