@@ -13,6 +13,7 @@ from posixpath import join
 from mezzanine.utils.conf import real_project_name
 
 from fabric.api import abort, env, cd, prefix, run as _run, hide, task, local
+from fabric.context_managers import settings as fab_settings
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template
 from fabric.contrib.project import rsync_project
@@ -23,7 +24,7 @@ from fabric.colors import yellow, green, blue, red
 # Config setup #
 ################
 
-env.proj_app = real_project_name("richardjackson")
+env.proj_app = real_project_name("project_name")
 
 conf = {}
 if sys.argv[0].split(os.sep)[-1] in ("fab", "fab-script.py"):
@@ -309,18 +310,18 @@ def vcs_upload():
             run("GIT_WORK_TREE=%s git checkout -f master" % env.proj_path)
             run("GIT_WORK_TREE=%s git reset --hard" % env.proj_path)
     elif env.deploy_tool == "hg":
-        # remote_path = "ssh://%s@%s/%s" % (env.user, env.host_string,
-        #                                   env.repo_path)
-        # with cd(env.repo_path):
-        #     if not exists("%s/.hg" % env.repo_path):
-        #         run("hg init")
-        #         print(env.repo_path)
-        #     with fab_settings(warn_only=True):
-        #         push = local("hg push -f %s" % remote_path)
-        #         if push.return_code == 255:
-        #             abort()
-        #     run("hg update")
-        abort("Mercurial is not currently supported")
+        remote_path = "ssh://%s@%s/%s" % (env.user, env.host_string,
+                                          env.repo_path)
+        with cd(env.repo_path):
+            if not exists("%s/.hg" % env.repo_path):
+                run("hg init")
+            with fab_settings(warn_only=True):
+                push = local(
+                    "hg push --config ui.remotecmd=/home/%s/bin/hg -f %s" %
+                    (env.user, remote_path))
+                if push.return_code == 255:
+                    abort("'hg push' failed.")
+            run("hg update -C")
 
 
 def db_pass():
@@ -412,7 +413,7 @@ def install():
 
     # Install Python requirements
     run("easy_install-2.7 pip")
-    run("pip install -U pip virtualenv virtualenvwrapper supervisor")
+    run("pip install -U pip virtualenv virtualenvwrapper supervisor mercurial")
 
     # Set up supervisor
     conf_path = "/home/%s/etc" % env.user

@@ -8,7 +8,7 @@
 ALLOWED_HOSTS = []
 
 FABRIC = {
-    "DEPLOY_TOOL": "git",  # Deploy with "git" or "rsync"
+    "DEPLOY_TOOL": "git",  # Deploy with "git", "hg", or "rsync"
     "SSH_USER": "",  # Wefaction username
     # "SSH_PASS": "",  # SSH and Webfaction account password
     # "SSH_KEY_PATH":  "",  # Local path to SSH key file, for key-based auth
