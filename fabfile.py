@@ -345,7 +345,7 @@ def pip(packages, show=True):
 @task
 def backup(filename):
     """
-    Backs up the project database.
+    Backs up the remote (production) database.
     """
     print(blue("Input the remote database password", bold=True))
     return run("pg_dump -U %s -Fc %s > %s" % (
@@ -353,12 +353,32 @@ def backup(filename):
 
 
 @task
+def local_backup(filename):
+    """
+    Backs up the local (development) database.
+    """
+    print(blue("Input the local database password", bold=True))
+    return local("pg_dump -U %s -Fc %s -h localhost > %s" % (
+        env.proj_name, env.proj_name, filename))
+
+
+@task
 def restore(filename):
     """
-    Restores the project database from a previous backup.
+    Restores the remote (production) database from a previous backup.
     """
     print(blue("Input the remote database password", bold=True))
     return run("pg_restore -U %s -c -d %s %s" % (
+        env.proj_name, env.proj_name, filename))
+
+
+@task
+def local_restore(filename):
+    """
+    Restores the local (development) database from a previous backup.
+    """
+    print(blue("Input the local database password", bold=True))
+    return local("pg_restore -U %s -c -d %s -h localhost %s" % (
         env.proj_name, env.proj_name, filename))
 
 
@@ -724,3 +744,43 @@ def all():
     install()
     if create():
         deploy()
+
+
+###############
+# Maintenance #
+###############
+
+@task
+@log_call
+def pulldb():
+    """
+    Backup the remote database, download it, and restore it locally.
+    """
+    prompt = ("This will delete your development database and copy the contents from "
+              "the production database. Continue?")
+    if not confirm(prompt, default=False):
+        abort("Aborting by user request.")
+    backup("%s_production.sql" % env.proj_name)
+    local("scp {0}@{1}:/home/{0}/{2}_production.sql .".format(
+        env.user, env.host_string, env.proj_name))
+    with fab_settings(warn_only=True):
+        # This last part can output some errors, but the restoration goes well
+        local_restore("%s_production.sql" % env.proj_name)
+
+
+@task
+@log_call
+def pushdb():
+    """
+    Backup the local database, upload it, and restore it remotely.
+    """
+    prompt = ("This will delete your production database and copy the contents from "
+              "the development database. Continue?")
+    if not confirm(prompt, default=False):
+        abort("Aborting by user request.")
+    local_backup("%s_development.sql" % env.proj_name)
+    local("scp {2}_development.sql {0}@{1}:/home/{0}/".format(
+        env.user, env.host_string, env.proj_name))
+    with fab_settings(warn_only=True):
+        # This last part can output some errors, but the restoration goes well
+        restore("%s_development.sql" % env.proj_name)
