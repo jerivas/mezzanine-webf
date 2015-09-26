@@ -283,6 +283,19 @@ def upload_template_and_reload(name):
         run(reload_command)
 
 
+def cpmedia(upload=True):
+    """
+    Copy media files between the remote and local environments.
+    The upload param determines the direction of the transfer.
+    """
+    # The empty last part ends the join() with a separator
+    local_dir = join(os.getcwd(), "static", "media", "")
+    remote_dir = join(static(), "media", "")
+    excludes = [".thumbnails"]
+    rsync_project(remote_dir=remote_dir, local_dir=local_dir, exclude=excludes,
+                  upload=upload)
+
+
 def rsync_upload():
     """
     Uploads the project with rsync excluding some files and folders.
@@ -784,3 +797,21 @@ def pushdb():
     with fab_settings(warn_only=True):
         # This last part can output some errors, but the restoration goes well
         restore("%s_development.sql" % env.proj_name)
+
+
+@task
+@log_call
+def pullmedia():
+    """
+    Downlaod the remote media files into the local MEDIA_ROOT.
+    """
+    cpmedia(upload=False)
+
+
+@task
+@log_call
+def pushmedia():
+    """
+    Upload the local media files into the remote MEDIA_ROOT.
+    """
+    cpmedia(upload=True)
