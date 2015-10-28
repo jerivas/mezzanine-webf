@@ -3,6 +3,5 @@
 *.db
 .DS_Store
 .coverage
-*.sublime-project
 *.sublime-workspace
 *~
