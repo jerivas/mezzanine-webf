@@ -24,4 +24,9 @@ FABRIC = {
     # "TWITTER_PERIOD": None,  # Minutes
     "SECRET_KEY": SECRET_KEY,
     "NEVERCACHE_KEY": NEVERCACHE_KEY,
+
+    # Email settings
+    # "EMAIL_USER": "",  # Webfaction mailbox username
+    # "EMAIL_PASS": "",  # Webfaction mailbox password
+    # "DEFAULT_EMAIL": "",  # Webfacion email address
 }
