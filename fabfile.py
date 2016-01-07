@@ -41,6 +41,7 @@ if sys.argv[0].split(os.sep)[-1] in ("fab", "fab-script.py"):
 
 env.db_pass = conf.get("DB_PASS", None)
 env.admin_pass = conf.get("ADMIN_PASS", None)
+env.admin_user = conf.get("ADMIN_USER", "admin")
 env.user = conf.get("SSH_USER", getuser())
 env.password = conf.get("SSH_PASS", None)
 env.key_filename = conf.get("SSH_KEY_PATH", None)
@@ -575,10 +576,10 @@ def create():
             pw = env.admin_pass
             user_py = ("from django.contrib.auth import get_user_model;"
                        "User = get_user_model();"
-                       "u, _ = User.objects.get_or_create(username='admin');"
+                       "u, _ = User.objects.get_or_create(username='%s');"
                        "u.is_staff = u.is_superuser = True;"
                        "u.set_password('%s');"
-                       "u.save();" % pw)
+                       "u.save();" % (env.admin_user, pw))
             python(user_py, show=False)
             shadowed = "*" * len(pw)
             print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
