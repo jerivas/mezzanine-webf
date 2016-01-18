@@ -500,7 +500,7 @@ def create():
                        "\nWould you like to replace it?" % env.proj_name):
                 run("rm -rf %s" % env.proj_name)
             else:
-                abort()
+                abort("Aborted at user request")
         run("virtualenv %s" % env.proj_name)
         # Make sure we don't inherit anything from the system's Python
         run("touch %s/lib/python2.7/sitecustomize.py" % env.proj_name)
@@ -666,7 +666,7 @@ def deploy():
                    "\nWould you like to create it?" % env.proj_name):
             create()
         else:
-            abort()
+            abort("Aborted at user request")
 
     # Backup current version of the project
     _print(blue("Backing up static files and database...", bold=True))
