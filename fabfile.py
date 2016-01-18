@@ -4,6 +4,7 @@ from future.builtins import open
 import os
 import re
 import sys
+import tempfile
 from contextlib import contextmanager
 from functools import wraps
 from getpass import getpass, getuser
@@ -12,7 +13,7 @@ from posixpath import join
 
 from mezzanine.utils.conf import real_project_name
 
-from fabric.api import abort, env, cd, prefix, run as _run, hide, task, local
+from fabric.api import abort, env, cd, get, prefix, run as _run, hide, task, local
 from fabric.context_managers import settings as fab_settings
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template
@@ -526,6 +527,8 @@ def create():
     if app:
         abort("App %s already exists." % app["name"])
     app = srv.create_app(ssn, env.proj_name, "custom_app_with_port", True, "")
+    # Save the application port to a file for later deployments
+    run("echo '%s' > %s/app.port" % (app["port"], env.proj_path))
 
     # Static app
     static_app = get_webf_obj(srv, ssn, "app", "%s_static" % env.proj_name)
@@ -704,9 +707,11 @@ def deploy():
 
     # Upload templated config files
     _print(blue("Uploading configuration files...", bold=True))
-    srv, ssn, acn = get_webf_session()
-    app = get_webf_obj(srv, ssn, "app", env.proj_name)
-    env.gunicorn_port = app["port"]
+    # Get the application port we saved on create() into the context
+    with tempfile.TemporaryFile() as temp:
+        get("%s/app.port" % env.proj_path, temp)
+        temp.seek(0)
+        env.gunicorn_port = temp.read()
     for name in get_templates():
         upload_template_and_reload(name)
     restart()
