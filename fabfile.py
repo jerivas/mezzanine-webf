@@ -711,7 +711,8 @@ def deploy():
     with tempfile.TemporaryFile() as temp:
         get("%s/app.port" % env.proj_path, temp)
         temp.seek(0)
-        env.gunicorn_port = temp.read()
+        port = temp.read()
+        env.gunicorn_port = port.strip()
     for name in get_templates():
         upload_template_and_reload(name)
     restart()
