@@ -122,6 +122,17 @@ back up, you need to do the following:
 - SSH into your Webfaction account and restart supervisor: `supervisord -c etc/supervisord.conf`.
 - Also restart memcached: `memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid`.
 
+#### Webfaction experienced an outage / rebooted my server and my site is down!
+You can partially mitigate this by periodically starting `supervisord` and
+`memcache` via a cronjob. You can also set the cronjob to be executed on
+server reboot only:
+
+```bash
+# cron jobs
+@reboot $HOME/bin/supervisord -c $HOME/etc/supervisord.conf
+@reboot memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid
+```
+
 #### Why are you using a symlink to a static/php app instead of one to a static-only app?
 Because by doing so you can specify expiration dates for static assets in
 `.htaccess` in your root static directory. This prevents browsers from
