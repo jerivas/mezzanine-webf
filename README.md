@@ -133,6 +133,17 @@ server reboot only:
 @reboot memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid
 ```
 
+There's an edge case with this approach: Gunicorn's PID file could potentially
+prevent `gunicorn` from starting again if it stores a PID it can't kill. This
+might be the case after a server reboot, where the PID file would keep the old
+PID and `gunicorn` would try to kill it before starting again. You can get
+around this by deleting all `gunicorn.pid` files after a reboot.
+
+```bash
+# Add to your crontab BEFORE the line that starts supervisord
+@reboot find ~/webapps -maxdepth 2 -type f -name gunicorn.pid -delete
+```
+
 #### Why are you using a symlink to a static/php app instead of one to a static-only app?
 Because by doing so you can specify expiration dates for static assets in
 `.htaccess` in your root static directory. This prevents browsers from
