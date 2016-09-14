@@ -119,8 +119,8 @@ back up, you need to do the following:
 
 - Consider reducing the amount of gunicorn workers, as explained in the
   previous point.
-- SSH into your Webfaction account and restart supervisor: `supervisord -c etc/supervisord.conf`.
-- Also restart memcached: `memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid`.
+- SSH into your Webfaction account and restart supervisor: `supervisord -c ~/etc/supervisord.conf`.
+- Also restart memcached: `memcached -d -m 50 -s ~/memcached.sock -P ~/memcached.pid`.
 
 #### Webfaction experienced an outage / rebooted my server and my site is down!
 You can partially mitigate this by periodically starting `supervisord` and
@@ -129,8 +129,8 @@ server reboot only:
 
 ```bash
 # cron jobs
-@reboot $HOME/bin/supervisord -c $HOME/etc/supervisord.conf
-@reboot memcached -d -m 50 -s $HOME/memcached.sock -P $HOME/memcached.pid
+@reboot ~/bin/supervisord -c ~/etc/supervisord.conf
+@reboot memcached -d -m 50 -s ~/memcached.sock -P ~/memcached.pid
 ```
 
 There's an edge case with this approach: Gunicorn's PID file could potentially
