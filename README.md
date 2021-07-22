@@ -1,3 +1,5 @@
+> This repo has been archived as Webfaction has gone out of business.
+
 # Mezzanine Webfaction
 
 Fabric file and related resources for deploying a [Mezzanine] project to a
